@@ -1,0 +1,28 @@
+# Local Kubernetes and Talos credentials
+kubeconfig*
+talosconfig*
+*.kubeconfig
+
+# Generated Talos machine configuration (may contain secrets)
+talos/generated/
+controlplane.yaml
+worker.yaml
+
+# Plaintext secrets and private keys
+*.key
+*.pem
+*.p12
+*.agekey
+secrets.dec.yaml
+*.decrypted.yaml
+
+# Local environment and tool output
+.env
+.env.*
+!.env.example
+.direnv/
+.idea/
+.vscode/
+.DS_Store
+tmp/
+dist/
