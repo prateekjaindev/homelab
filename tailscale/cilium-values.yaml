@@ -1,4 +1,8 @@
 # Added on top of networking/cilium/values.yaml once the nodes run Tailscale.
-# Without it, Cilium also picks up tailscale0 as a device and lowers the pod MTU
-# to fit its 1280-byte MTU, which breaks QUIC (cloudflared) from pods.
-devices: enp1s0
+# tailscale0 is a Cilium device so traffic from the tailnet to LoadBalancer IPs
+# (the internal Gateway on .201) is load-balanced on the node it arrives at;
+# without it the node ARPs for the IP and Cilium's L2 announcer doesn't answer
+# other cluster nodes. MTU is fixed at the LAN's 1500, otherwise Cilium sizes
+# the pod network for tailscale0's 1280 and QUIC (cloudflared) breaks.
+devices: [enp1s0, tailscale0]
+MTU: 1500
