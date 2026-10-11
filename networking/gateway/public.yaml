@@ -1,0 +1,30 @@
+# The internet front door. Only cloudflared sends traffic here (plain HTTP
+# inside the cluster); Cloudflare's edge terminates TLS for *.prateek.cloud.
+#
+# A route can attach only from a namespace labelled gateway.cybertron/public=true,
+# so making something public takes three deliberate steps: label the namespace,
+# write a route with parentRef "public", and add the DNS record.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+  namespace: gateway
+spec:
+  gatewayClassName: cilium
+  # Cilium creates a LoadBalancer Service for every Gateway, so this one
+  # takes a LAN IP too. Nothing on the LAN needs it; cloudflared uses the
+  # Service's cluster DNS name (cilium-gateway-public.gateway.svc).
+  addresses:
+    - type: IPAddress
+      value: 192.168.1.202
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.prateek.cloud"
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              gateway.cybertron/public: "true"

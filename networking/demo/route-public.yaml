@@ -1,0 +1,19 @@
+# Internet: https://whoami.prateek.cloud through Cloudflare Tunnel and the
+# public Gateway. Needs the namespace label gateway.cybertron/public=true and
+# the DNS record (cloudflared tunnel route dns cybertron whoami.prateek.cloud).
+# Remove it after the tests; the lab route stays as a smoke test.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whoami-public
+  namespace: demo
+spec:
+  parentRefs:
+    - name: public
+      namespace: gateway
+  hostnames:
+    - whoami.prateek.cloud
+  rules:
+    - backendRefs:
+        - name: whoami
+          port: 80

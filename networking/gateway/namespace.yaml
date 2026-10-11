@@ -1,0 +1,7 @@
+# Both Gateways, the lab certificate and the Hubble UI route live here.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway
+  labels:
+    pod-security.kubernetes.io/enforce: restricted

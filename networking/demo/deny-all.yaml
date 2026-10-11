@@ -1,0 +1,10 @@
+# Default deny for incoming traffic in the demo namespace (plain Kubernetes
+# NetworkPolicy). Flannel accepts this object and ignores it; Cilium enforces it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress
+  namespace: demo
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]

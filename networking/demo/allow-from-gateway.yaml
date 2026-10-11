@@ -1,0 +1,16 @@
+# Let the Gateways reach whoami. Requests that come through a Cilium Gateway
+# reach the pods from Envoy, which has the reserved "ingress" identity. A plain
+# NetworkPolicy can't name that identity, so this is a CiliumNetworkPolicy.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-from-gateway
+  namespace: demo
+spec:
+  endpointSelector:
+    matchLabels: { app: whoami }
+  ingress:
+    - fromEntities: [ingress]
+      toPorts:
+        - ports:
+            - { port: "8080", protocol: TCP }

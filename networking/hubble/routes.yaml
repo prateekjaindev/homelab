@@ -1,0 +1,36 @@
+# Hubble UI on the LAN: https://hubble.lab.prateek.cloud. The route lives in
+# the gateway namespace and points at the hubble-ui Service in kube-system,
+# which the ReferenceGrant allows.
+#
+# LAN only: no route on the public Gateway.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hubble-lab
+  namespace: gateway
+spec:
+  parentRefs:
+    - name: internal
+      sectionName: https
+  hostnames:
+    - hubble.lab.prateek.cloud
+  rules:
+    - backendRefs:
+        - name: hubble-ui
+          namespace: kube-system
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: ReferenceGrant
+metadata:
+  name: hubble-ui-from-gateway
+  namespace: kube-system
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: gateway
+  to:
+    - group: ""
+      kind: Service
+      name: hubble-ui

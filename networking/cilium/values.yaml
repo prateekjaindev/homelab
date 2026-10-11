@@ -1,0 +1,46 @@
+# Cilium 1.20.2 on Talos 1.14 (cybertron).
+# Talos settings follow the Sidero Labs guide "Deploying Cilium CNI".
+
+ipam:
+  mode: kubernetes # keep the node pod CIDRs from 10.244.0.0/16
+
+# Replace kube-proxy. Cilium reaches the API through KubePrism on every node,
+# so it doesn't depend on a Service that it has to program itself.
+kubeProxyReplacement: true
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# Talos doesn't allow loading kernel modules (no SYS_MODULE) and already
+# mounts cgroup v2 and bpffs.
+securityContext:
+  capabilities:
+    ciliumAgent: [CHOWN, KILL, NET_ADMIN, NET_RAW, IPC_LOCK, SYS_ADMIN, SYS_RESOURCE, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    cleanCiliumState: [NET_ADMIN, SYS_ADMIN, SYS_RESOURCE]
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+
+# bpf.masquerade stays off: the machine config has
+# hostDNS.forwardKubeDNSToHost=true, and Talos lists that combination as a
+# known CoreDNS failure.
+
+# LoadBalancer IPs on the LAN: LB IPAM is on by default, L2 announcements
+# answer ARP for them. Leases add API calls, so raise the client rate limit.
+l2announcements:
+  enabled: true
+k8sClientRateLimit:
+  qps: 20
+  burst: 40
+
+# Gateway API (needs the Gateway API CRDs installed first).
+gatewayAPI:
+  enabled: true
+  enableAlpn: true
+  enableAppProtocol: true
+
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true

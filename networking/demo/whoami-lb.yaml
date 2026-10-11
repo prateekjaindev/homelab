@@ -1,0 +1,14 @@
+# LoadBalancer test only: whoami on its own LAN IP, to see LB IPAM + L2 announcements
+# work before any Gateway exists. Delete it after the test.
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami-lb
+  namespace: demo
+  annotations:
+    lbipam.cilium.io/ips: 192.168.1.205
+spec:
+  type: LoadBalancer
+  selector: { app: whoami }
+  ports:
+    - { name: http, port: 80, targetPort: http }

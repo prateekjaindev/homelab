@@ -1,0 +1,102 @@
+# One shared, locally managed Cloudflare Tunnel ("cybertron") for every public
+# app. cloudflared sends every *.prateek.cloud request to the public Gateway,
+# which routes by Host header. A hostname only reaches this tunnel once it has
+# its own DNS record: cloudflared tunnel route dns cybertron <app>.prateek.cloud
+#
+# Secret cloudflared/cloudflared-cybertron (created by hand, not in git):
+#   credentials.json  the tunnel credentials from `cloudflared tunnel create`
+#   TUNNEL_ID         the tunnel's UUID
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudflared
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+data:
+  config.yaml: |
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    no-autoupdate: true
+    metrics: 0.0.0.0:2000
+    ingress:
+      - hostname: "*.prateek.cloud"
+        service: http://cilium-gateway-public.gateway.svc.cluster.local:80
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: cloudflared }
+  template:
+    metadata:
+      labels: { app: cloudflared }
+    spec:
+      automountServiceAccountToken: false
+      # Never both replicas on one node.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels: { app: cloudflared }
+      securityContext:
+        runAsUser: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.10.0
+          args: ["tunnel", "--config", "/etc/cloudflared/config/config.yaml", "run", "$(TUNNEL_ID)"]
+          env:
+            - name: TUNNEL_ID
+              valueFrom:
+                secretKeyRef: { name: cloudflared-cybertron, key: TUNNEL_ID }
+          ports:
+            - { name: metrics, containerPort: 2000 }
+          readinessProbe:
+            httpGet: { path: /ready, port: 2000 }
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /ready, port: 2000 }
+            initialDelaySeconds: 20
+            periodSeconds: 30
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          volumeMounts:
+            - { name: config, mountPath: /etc/cloudflared/config, readOnly: true }
+            - { name: creds, mountPath: /etc/cloudflared/creds, readOnly: true }
+      volumes:
+        - name: config
+          configMap: { name: cloudflared }
+        - name: creds
+          secret:
+            secretName: cloudflared-cybertron
+            items:
+              - { key: credentials.json, path: credentials.json }
+---
+# Node drains and upgrades keep at least one tunnel connector running.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: { app: cloudflared }

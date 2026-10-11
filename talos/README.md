@@ -142,6 +142,8 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints
 ```
 
 Include this patch when regenerating machine configurations for future use.
+Since Part 2 the cluster runs Cilium: also include
+[`networking/talos/cilium.yaml`](../networking/talos/cilium.yaml).
 
 ## 7. Test scheduling, DNS, and Services
 

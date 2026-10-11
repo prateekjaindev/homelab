@@ -1,0 +1,9 @@
+# cert-manager v1.21.2 (supports Kubernetes 1.33-1.36).
+crds:
+  enabled: true
+
+# Check DNS-01 TXT records against public resolvers, not the cluster's DNS
+# (which forwards to the host and the router).
+extraArgs:
+  - --dns01-recursive-nameservers-only
+  - --dns01-recursive-nameservers=1.1.1.1:53,1.0.0.1:53

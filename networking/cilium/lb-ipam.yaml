@@ -1,0 +1,25 @@
+# LAN addresses for Services of type LoadBalancer (and the Gateways).
+# Keep 192.168.1.201-205 out of the router's DHCP pool, like the API VIP .200:
+# shrink the pool, or reserve each address with a DHCP binding to a placeholder
+# MAC (02:00:00:00:02:01..05). Reserve more before growing this range.
+apiVersion: cilium.io/v2
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: lan
+spec:
+  blocks:
+    - start: 192.168.1.201
+      stop: 192.168.1.205
+---
+# One node answers ARP for each LoadBalancer IP; a Kubernetes Lease decides
+# which. No nodeSelector: all three nodes are control planes, so the docs'
+# example (control-plane DoesNotExist) would select no node at all.
+apiVersion: cilium.io/v2alpha1
+kind: CiliumL2AnnouncementPolicy
+metadata:
+  name: lan
+spec:
+  interfaces:
+    - ^enp1s0$
+  loadBalancerIPs: true
+  externalIPs: false

@@ -1,0 +1,13 @@
+# One wildcard certificate for every lab app; renewed by cert-manager.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: lab-wildcard
+  namespace: gateway
+spec:
+  secretName: lab-wildcard-tls
+  dnsNames:
+    - "*.lab.prateek.cloud"
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
