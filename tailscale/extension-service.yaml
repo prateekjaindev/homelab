@@ -1,0 +1,13 @@
+# Tailscale on a Talos node. One copy per node: replace <node> and <tailscale-auth-key>
+# at apply time (see README.md). The filled-in file contains the key: keep it out of git.
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: tailscale
+environment:
+  - TS_AUTHKEY=<tailscale-auth-key>
+  - TS_HOSTNAME=<node>
+  # The only addresses the nodes advertise: the three nodes, the API VIP and the internal Gateway.
+  - TS_ROUTES=192.168.1.111/32,192.168.1.112/32,192.168.1.113/32,192.168.1.200/32,192.168.1.201/32
+  - TS_ACCEPT_DNS=false
+  # Log in with the key once; afterwards the node state in /var/lib/tailscale is used.
+  - TS_AUTH_ONCE=true

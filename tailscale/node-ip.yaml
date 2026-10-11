@@ -1,0 +1,11 @@
+# Keep Kubernetes and etcd on the LAN addresses. Without this, a node that joins the tailnet can
+# start advertising its 100.x tailnet address as its node IP and as its etcd peer address.
+machine:
+  kubelet:
+    nodeIP:
+      validSubnets:
+        - 192.168.1.0/24
+cluster:
+  etcd:
+    advertisedSubnets:
+      - 192.168.1.0/24

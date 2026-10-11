@@ -1,0 +1,4 @@
+# Added on top of networking/cilium/values.yaml once the nodes run Tailscale.
+# Without it, Cilium also picks up tailscale0 as a device and lowers the pod MTU
+# to fit its 1280-byte MTU, which breaks QUIC (cloudflared) from pods.
+devices: enp1s0

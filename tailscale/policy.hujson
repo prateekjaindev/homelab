@@ -1,0 +1,34 @@
+// Tailscale access policy (admin console -> Access controls). HuJSON: comments are allowed.
+{
+  // Only admins may put this tag on a device. The auth key for the nodes carries it.
+  "tagOwners": {
+    "tag:cybertron": ["autogroup:admin"]
+  },
+
+  // The nodes may advertise exactly these routes, and they are approved automatically.
+  "autoApprovers": {
+    "routes": {
+      "192.168.1.111/32": ["tag:cybertron"],
+      "192.168.1.112/32": ["tag:cybertron"],
+      "192.168.1.113/32": ["tag:cybertron"],
+      "192.168.1.200/32": ["tag:cybertron"],
+      "192.168.1.201/32": ["tag:cybertron"]
+    }
+  },
+
+  // Members of the tailnet reach the Gateway (HTTP and HTTPS), the Kubernetes API and the
+  // Talos API, and nothing else. Everything not listed is denied.
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["autogroup:member"],
+      "dst": [
+        "192.168.1.201:80,443",
+        "192.168.1.200:6443",
+        "192.168.1.111:50000",
+        "192.168.1.112:50000",
+        "192.168.1.113:50000"
+      ]
+    }
+  ]
+}

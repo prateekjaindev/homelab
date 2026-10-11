@@ -1,0 +1,6 @@
+# Talos Image Factory schematic: the default image plus the Tailscale extension.
+# POST it to https://factory.talos.dev/schematics to get the schematic ID.
+customization:
+  systemExtensions:
+    officialExtensions:
+      - siderolabs/tailscale

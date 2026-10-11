@@ -12,8 +12,9 @@ else depends on.
 | Part | Post | Folder |
 | --- | --- | --- |
 | 1. A highly available cluster with Talos Linux | [Building a 3-Node Highly Available Kubernetes Homelab with Talos Linux](https://blog.prateekjain.dev/building-a-3-node-highly-available-kubernetes-homelab-with-talos-linux-0372066fe49c?sk=4c66cf9181999f9db19ac3aacabcd8e8) | [`talos/`](talos/README.md) |
-| 2. Networking: Cilium, Gateway API, cert-manager, Cloudflare Tunnel | coming soon | [`networking/`](networking/README.md) |
-| 3. Storage | planned | |
+| 2. Networking: Cilium, Gateway API, cert-manager, Cloudflare Tunnel | [Networking a 3-Node Kubernetes Homelab with Cilium, Gateway API and Cloudflare Tunnel](https://blog.prateekjain.dev/networking-a-kubernetes-homelab-cilium-gateway-api-and-cloudflare-tunnel-on-talos-362f548a2f3d?sk=d454cd4eaff4ce8a8fd0cd8e6b3d82f6) | [`networking/`](networking/README.md) |
+| 3. Remote access with Tailscale | [Tailscale on Talos Linux: Secure Remote Access to a Kubernetes Homelab](https://blog.prateekjain.dev/tailscale-on-talos-linux-secure-remote-access-to-a-kubernetes-homelab-8a082d903682?sk=c4ec5ac1e782a83b5dc785211d9fd082) | [`tailscale/`](tailscale/README.md) |
+| 4. Storage | planned | |
 
 ## The cluster
 
@@ -74,6 +75,28 @@ Gateways, and the route's `parentRef` decides which:
 
 Details and the full migration from Flannel: [`networking/`](networking/README.md).
 
+## Remote access
+
+![Five routes from anywhere: the phone and laptop reach the Gateway and the Kubernetes API through the tailnet and the active node; addresses that aren't routed stay unreachable; when the active node reboots another node takes over](assets/tailscale-routes.gif)
+
+Tailscale runs on all three nodes as a Talos system extension, so `kubectl`,
+`talosctl` and the lab apps work from anywhere with the same addresses,
+certificates, kubeconfig and talosconfig as at home.
+
+- **Five /32 routes, not the LAN:** the three node addresses (Talos API), the
+  API VIP `192.168.1.200` and the internal Gateway `192.168.1.201`. The router,
+  phones and everything else on the network stay unreachable.
+- **High availability:** every node advertises the same routes; one is active
+  and another takes over when it goes down.
+- **Access policy:** members of the tailnet reach only ports 80/443 on the
+  Gateway, 6443 on the VIP and 50000 on the nodes. The nodes are tagged devices
+  with no key expiry, and the auth key is revoked after they join.
+- **No open ports at home**, and the Talos API stays reachable even when
+  Kubernetes is down.
+
+Details, the gotchas (node IPs, Cilium MTU, extension config before the
+upgrade) and the failover test: [`tailscale/`](tailscale/README.md).
+
 ## Versions
 
 | Component | Version |
@@ -84,11 +107,12 @@ Details and the full migration from Flannel: [`networking/`](networking/README.m
 | Gateway API CRDs | v1.6.1 |
 | cert-manager | v1.21.2 |
 | cloudflared | 2026.10.0 |
+| Tailscale (Talos extension) | 1.102.2 |
 
 ## What's next
 
 - **Storage:** a Talos user volume on each node's SSD and Longhorn for
-  replicated volumes, plus Tailscale for remote `kubectl` and `talosctl`.
+  replicated volumes.
 - **Later:** observability (Prometheus, Grafana), GitOps with Argo CD, backups,
   and security tooling.
 
@@ -98,6 +122,7 @@ Details and the full migration from Flannel: [`networking/`](networking/README.m
 | --- | --- |
 | [`talos/`](talos/README.md) | Part 1: install, bootstrap and validate the Talos cluster |
 | [`networking/`](networking/README.md) | Part 2: Cilium, LB IPAM, Gateways, cert-manager, Cloudflare Tunnel, demo app and tests |
+| [`tailscale/`](tailscale/README.md) | Part 3: Tailscale extension, subnet routes, access policy, failover |
 | `assets/` | Diagrams used in this README |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
