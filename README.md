@@ -143,3 +143,10 @@ or in Kubernetes Secrets created by hand.
 ## License
 
 [MIT](LICENSE). Use, copy and adapt anything here for your own lab.
+
+## Follow the series
+
+For the next parts, follow along on
+[blog.prateekjain.dev](https://blog.prateekjain.dev),
+[X (@PrateekJainDev)](https://x.com/PrateekJainDev) or
+[LinkedIn (in/prateekjaindev)](https://www.linkedin.com/in/prateekjaindev).
