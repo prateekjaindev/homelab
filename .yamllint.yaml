@@ -1,0 +1,20 @@
+# yamllint configuration for the manifests, Helm values and Talos patches.
+extends: default
+
+rules:
+  # Comments explain the why and are allowed to run long.
+  line-length: disable
+  # Multi-document files start without "---".
+  document-start: disable
+  # Inline maps such as { app: whoami } are used for short selectors.
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  comments:
+    min-spaces-from-content: 1
+  # "on:" in workflows is a key, not a boolean.
+  truthy:
+    check-keys: false

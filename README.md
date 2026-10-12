@@ -2,6 +2,13 @@
 
 ![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel and Tailscale](assets/banner.png)
 
+[![validate](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml/badge.svg)](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml)
+[![Talos 1.14](https://img.shields.io/badge/Talos-1.14-FF7300?logo=talos&logoColor=white)](https://www.talos.dev)
+[![Kubernetes 1.36](https://img.shields.io/badge/Kubernetes-1.36-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io)
+[![Cilium 1.20](https://img.shields.io/badge/Cilium-1.20-F8C517?logo=cilium&logoColor=black)](https://cilium.io)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Blog](https://img.shields.io/badge/blog-blog.prateekjain.dev-12100E?logo=medium&logoColor=white)](https://blog.prateekjain.dev)
+
 Commands and manifests for **Cybertron**, a three-node Talos Linux Kubernetes
 cluster on refurbished mini PCs, as built in the blog series. Each folder
 matches one part.
@@ -126,8 +133,13 @@ upgrade) and the failover test: [`tailscale/`](tailscale/README.md).
 | [`networking/`](networking/README.md) | Part 2: Cilium, LB IPAM, Gateways, cert-manager, Cloudflare Tunnel, demo app and tests |
 | [`tailscale/`](tailscale/README.md) | Part 3: Tailscale extension, subnet routes, access policy, failover |
 | `assets/` | Diagrams used in this README |
+| `.github/workflows/` | CI on every push: yamllint, kubeconform (Kubernetes 1.36 and the CRDs used), gitleaks, link check |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
 go in this repository: generated Talos configuration, `talosconfig`,
 `kubeconfig`, API tokens and tunnel credentials stay local (see `.gitignore`)
 or in Kubernetes Secrets created by hand.
+
+## License
+
+[MIT](LICENSE). Use, copy and adapt anything here for your own lab.

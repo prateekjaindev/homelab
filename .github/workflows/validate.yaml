@@ -1,0 +1,80 @@
+# Checks every push and pull request:
+#   yamllint     formatting of manifests, Helm values and Talos patches
+#   kubeconform  every Kubernetes manifest against Kubernetes and the CRDs it uses
+#   gitleaks     no secrets anywhere in the git history
+#   lychee       links between the READMEs (files and #anchors) resolve
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KUBERNETES_VERSION: 1.36.3
+  LONGHORN_VERSION: v1.13.0
+  KUBECONFORM_VERSION: v0.8.0
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pipx run --spec yamllint==1.38.0 yamllint --strict .
+
+  kubeconform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      # The community CRD catalog lags behind Longhorn, so its schemas are built
+      # from the official CRDs at the version the storage part installs.
+      - name: Longhorn schemas
+        run: |
+          mkdir -p "$RUNNER_TEMP/schemas/longhorn.io"
+          curl -sfL "https://raw.githubusercontent.com/yannh/kubeconform/$KUBECONFORM_VERSION/scripts/openapi2jsonschema.py" -o "$RUNNER_TEMP/openapi2jsonschema.py"
+          curl -sfL "https://raw.githubusercontent.com/longhorn/longhorn/$LONGHORN_VERSION/deploy/longhorn.yaml" -o "$RUNNER_TEMP/longhorn.yaml"
+          pip install --quiet pyyaml
+          cd "$RUNNER_TEMP/schemas/longhorn.io"
+          python "$RUNNER_TEMP/openapi2jsonschema.py" "$RUNNER_TEMP/longhorn.yaml" > /dev/null
+
+      # Skipped on purpose: Helm values, Talos machine-config patches and
+      # Image Factory schematics are not Kubernetes resources.
+      - name: Validate manifests
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/schemas:/schemas:ro" -w /repo \
+            "ghcr.io/yannh/kubeconform:$KUBECONFORM_VERSION" \
+            -strict -summary -kubernetes-version "$KUBERNETES_VERSION" \
+            -schema-location default \
+            -schema-location '/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+            -ignore-filename-pattern '/talos/' \
+            -ignore-filename-pattern '(values[^/]*|schematic|node-ip|extension-service)\.yaml$' \
+            -ignore-filename-pattern '^\.' \
+            .
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - run: docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.30.1 git --no-banner --redact -v /repo
+
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Offline: only links inside the repo. Blog links are left out because
+      # Medium often answers automated requests with 403.
+      - uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --offline --include-fragments --no-progress '**/*.md'
+          fail: true
