@@ -1,5 +1,7 @@
 # Homelab
 
+![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel and Tailscale](assets/banner.png)
+
 Commands and manifests for **Cybertron**, a three-node Talos Linux Kubernetes
 cluster on refurbished mini PCs, as built in the blog series. Each folder
 matches one part.

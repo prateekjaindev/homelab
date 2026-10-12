@@ -5,6 +5,8 @@ kube-proxy on the running cluster, then LoadBalancer IPs on the LAN, two
 Gateways (LAN and internet), Let's Encrypt certificates for LAN-only names,
 and one Cloudflare Tunnel for public apps.
 
+![Two front doors into Cybertron: public apps through Cloudflare Tunnel and the public Gateway, lab apps on the LAN through the internal Gateway, and lab names unreachable from the internet](../assets/networking-two-front-doors.gif)
+
 ```
                        Internet
                           │
