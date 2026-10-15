@@ -45,8 +45,8 @@ jobs:
           cd "$RUNNER_TEMP/schemas/longhorn.io"
           python "$RUNNER_TEMP/openapi2jsonschema.py" "$RUNNER_TEMP/longhorn.yaml" > /dev/null
 
-      # Skipped on purpose: Helm values, Talos machine-config patches and
-      # Image Factory schematics are not Kubernetes resources.
+      # Skipped on purpose: Helm values, Talos machine-config patches, Omni
+      # resources and Image Factory schematics are not Kubernetes resources.
       - name: Validate manifests
         run: |
           docker run --rm -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/schemas:/schemas:ro" -w /repo \
@@ -56,6 +56,7 @@ jobs:
             -schema-location '/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -ignore-filename-pattern '/talos/' \
+            -ignore-filename-pattern '^omni/' \
             -ignore-filename-pattern '(values[^/]*|schematic|node-ip|extension-service)\.yaml$' \
             -ignore-filename-pattern '^\.' \
             .

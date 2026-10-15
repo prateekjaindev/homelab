@@ -1,0 +1,69 @@
+# Replaces the patch Omni's import created for bumblebee with Talos 1.14-style documents.
+# omnictl apply -f omni/patches/bumblebee.yaml (replace the machine ID with yours: omnictl get configpatches)
+metadata:
+  namespace: default
+  type: ConfigPatches.omni.sidero.dev
+  id: 10-4c4c4544-0044-4410-804c-b9c04f523333
+  labels:
+    omni.sidero.dev/cluster: cybertron
+    omni.sidero.dev/cluster-machine: 4c4c4544-0044-4410-804c-b9c04f523333
+  annotations:
+    name: User defined patch
+    description: Config patch imported from existing Talos node, rewritten for Talos 1.14 documents
+spec:
+  data: |
+    machine:
+      network:
+        interfaces:
+          - interface: enp1s0
+            dhcp: true
+            vip:
+              ip: 192.168.1.200
+    cluster:
+      etcd:
+        advertisedSubnets:
+          - 192.168.1.0/24
+    ---
+    apiVersion: v1alpha1
+    kind: KubeNodeConfig
+    nodeIP:
+      validSubnets:
+        - 192.168.1.0/24
+    taints:
+      $patch: delete
+    ---
+    apiVersion: v1alpha1
+    kind: KubeFlannelCNIConfig
+    $patch: delete
+    ---
+    apiVersion: v1alpha1
+    kind: KubeProxyConfig
+    $patch: delete
+    ---
+    # 1.14 defaults for new clusters only; keep the node as it runs today
+    apiVersion: v1alpha1
+    kind: SecurityProfileConfig
+    $patch: delete
+    ---
+    apiVersion: v1alpha1
+    kind: VolumeConfig
+    name: EPHEMERAL
+    $patch: delete
+    ---
+    apiVersion: v1alpha1
+    kind: FilesystemTrimConfig
+    $patch: delete
+    ---
+    apiVersion: v1alpha1
+    kind: ExtensionServiceConfig
+    name: tailscale
+    environment:
+      - TS_HOSTNAME=bumblebee
+      - TS_ROUTES=192.168.1.111/32,192.168.1.112/32,192.168.1.113/32,192.168.1.200/32,192.168.1.201/32
+      - TS_ACCEPT_DNS=false
+      - TS_AUTH_ONCE=true
+    ---
+    apiVersion: v1alpha1
+    kind: HostnameConfig
+    auto: "off"
+    hostname: bumblebee

@@ -1,0 +1,14 @@
+# Removes the documents an Omni import adds to a node (Omni docs, "Aborting an import", option 2).
+# talosctl -n <node> patch machineconfig --patch @omni/undo.yaml
+apiVersion: v1alpha1
+kind: SideroLinkConfig
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: EventSinkConfig
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: KmsgLogConfig
+name: omni-kmsg
+$patch: delete
