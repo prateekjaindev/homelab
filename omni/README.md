@@ -8,6 +8,8 @@ imports the nodes, keeps their config as patches, and from then on kubectl and t
 through Omni with single sign-on. Both CAs are rotated at the end, so the talosconfig and
 kubeconfig from Part 1 stop working.
 
+![Before: the laptop talks straight to the nodes. Import: each node opens an outbound SideroLink tunnel to Omni and the cluster is locked. Unlock: kubectl and talosctl go through Omni. After the CA rotations the old certificates are rejected](../assets/omni-import.gif)
+
 ```
   laptop ── kubectl, talosctl (OIDC login) ──► Omni (hosted)
                                                  ▲
