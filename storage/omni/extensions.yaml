@@ -1,0 +1,18 @@
+# System extensions for every Cybertron node. Omni builds the schematic and
+# rolls it out one control plane at a time (drain, upgrade, reboot, uncordon).
+# List every extension the nodes need: the list replaces what they have.
+#   iscsi-tools       iscsid/iscsiadm for Longhorn's V1 engine
+#   tailscale         remote talosctl/kubectl (Part 3)
+#   util-linux-tools  fstrim, for Longhorn's filesystem-trim jobs
+# omnictl apply -f storage/omni/extensions.yaml
+metadata:
+  namespace: default
+  type: ExtensionsConfigurations.omni.sidero.dev
+  id: schematic-cybertron
+  labels:
+    omni.sidero.dev/cluster: cybertron
+spec:
+  extensions:
+    - siderolabs/iscsi-tools
+    - siderolabs/tailscale
+    - siderolabs/util-linux-tools

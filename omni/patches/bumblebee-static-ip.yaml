@@ -1,0 +1,30 @@
+# Static IP for bumblebee, as Part 4 left it. Omni deletes a machine's patches when it
+# leaves the cluster (Part 5), so re-apply this before adding the node back.
+# omnictl apply -f omni/patches/bumblebee-static-ip.yaml
+metadata:
+  namespace: default
+  type: ConfigPatches.omni.sidero.dev
+  id: 20-4c4c4544-0044-4410-804c-b9c04f523333-static-ip
+  labels:
+    omni.sidero.dev/cluster: cybertron
+    omni.sidero.dev/cluster-machine: 4c4c4544-0044-4410-804c-b9c04f523333
+  annotations:
+    description: Pin enp1s0 to 192.168.1.112 so a rogue DHCP server cannot move the control plane
+    name: Static IP (bumblebee)
+spec:
+  data: |
+    machine:
+      network:
+        interfaces:
+          - interface: enp1s0
+            dhcp: false
+            addresses:
+              - 192.168.1.112/24
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 192.168.1.1
+    ---
+    apiVersion: v1alpha1
+    kind: ResolverConfig
+    nameservers:
+      - address: 192.168.1.1

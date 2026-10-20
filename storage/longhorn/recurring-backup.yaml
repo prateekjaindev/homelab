@@ -1,0 +1,15 @@
+# Optional: nightly backups to the S3 target from values-backup.yaml, kept for
+# two weeks. In the "default" group, so it covers every volume without jobs of its own.
+
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: backup-nightly
+  namespace: longhorn-system
+spec:
+  task: backup
+  cron: "0 3 * * *"
+  groups: [default]
+  retentionPolicy: count-based
+  retain: 14
+  concurrency: 1

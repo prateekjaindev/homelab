@@ -41,13 +41,9 @@ spec:
     $patch: delete
     ---
     # 1.14 defaults for new clusters only; keep the node as it runs today
+    # (EPHEMERAL is sized by storage/omni/storage-patch.yaml since Part 5)
     apiVersion: v1alpha1
     kind: SecurityProfileConfig
-    $patch: delete
-    ---
-    apiVersion: v1alpha1
-    kind: VolumeConfig
-    name: EPHEMERAL
     $patch: delete
     ---
     apiVersion: v1alpha1

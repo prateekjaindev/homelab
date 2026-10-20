@@ -1,0 +1,6 @@
+# Optional: backups to AWS S3. Needs Secret longhorn-system/longhorn-s3 (keys
+# AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY), created by hand. Replace the bucket
+# and region; the trailing slash is required.
+defaultBackupStore:
+  backupTarget: s3://<bucket>@<region>/
+  backupTargetCredentialSecret: longhorn-s3

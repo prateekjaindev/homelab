@@ -39,6 +39,7 @@ commands from the repository root, in bash.
 | File | What it is |
 | --- | --- |
 | `patches/<node>.yaml` | Replacement for the patch the import creates for each node, written with the Talos 1.14 documents |
+| `patches/<node>-static-ip.yaml` | Each node's static IP and resolver. Re-apply it with the node patch when a node is added back after a wipe (Part 5) |
 | `undo.yaml` | Removes the three documents the import adds to a node, for an abort before unlocking |
 
 ## 1. Check the cluster and back it up

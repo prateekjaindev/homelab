@@ -1,0 +1,8 @@
+# Longhorn's manager, engines and CSI plugin are privileged; Talos enforces
+# the baseline Pod Security level by default.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: longhorn-system
+  labels:
+    pod-security.kubernetes.io/enforce: privileged

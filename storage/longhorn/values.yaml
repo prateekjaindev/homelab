@@ -1,0 +1,26 @@
+# Longhorn 1.13.0 on Talos 1.14 (cybertron), V1 data engine.
+
+defaultSettings:
+  # The user volume from storage/talos/volumes.yaml.
+  defaultDataPath: /var/mnt/longhorn
+  # The partition is Longhorn's alone, so don't hold back 30 % of it.
+  # storageMinimalAvailablePercentage (25 %) still stops scheduling on a nearly full disk.
+  storageReservedPercentageForDefaultDisk: 0
+  # Two copies on three nodes: when one node is down, there's a node to rebuild on.
+  defaultReplicaCount: '{"v1":"2","v2":"2"}'
+  # Without this, a pod on a powered-off node stays Terminating forever and its
+  # volume can't attach anywhere else.
+  nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+
+persistence:
+  defaultClassReplicaCount: 2
+
+# The UI on the LAN Gateway from Part 2. It has no login, so never the public one.
+httproute:
+  enabled: true
+  parentRefs:
+    - name: internal
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - longhorn.lab.prateek.cloud

@@ -2,6 +2,8 @@
 
 Detailed guide: [Building a 3-Node Highly Available Kubernetes Homelab with Talos Linux](https://blog.prateekjain.dev/building-a-3-node-highly-available-kubernetes-homelab-with-talos-linux-0372066fe49c?sk=4c66cf9181999f9db19ac3aacabcd8e8).
 
+![Cybertron: kubectl reaches the API through a virtual IP, talosctl talks to each node, etcd runs on all three, and the API survives one node powering off](../assets/cybertron-cluster.gif)
+
 For a **fresh installation**. Installing writes to the selected disks; do not
 rerun installation or bootstrap on an existing cluster.
 
@@ -143,7 +145,9 @@ kubectl get nodes -o custom-columns=NAME:.metadata.name,TAINTS:.spec.taints
 
 Include this patch when regenerating machine configurations for future use.
 Since Part 2 the cluster runs Cilium: also include
-[`networking/talos/cilium.yaml`](../networking/talos/cilium.yaml).
+[`networking/talos/cilium.yaml`](../networking/talos/cilium.yaml). Since
+Part 4 the cluster is managed by Omni; the storage layout and extensions are
+Omni resources in [`storage/omni/`](../storage/omni/).
 
 ## 7. Test scheduling, DNS, and Services
 

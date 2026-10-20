@@ -23,7 +23,8 @@ else depends on.
 | 1. A highly available cluster with Talos Linux | [Building a 3-Node Highly Available Kubernetes Homelab with Talos Linux](https://blog.prateekjain.dev/building-a-3-node-highly-available-kubernetes-homelab-with-talos-linux-0372066fe49c?sk=4c66cf9181999f9db19ac3aacabcd8e8) | [`talos/`](talos/README.md) |
 | 2. Networking: Cilium, Gateway API, cert-manager, Cloudflare Tunnel | [Networking a 3-Node Kubernetes Homelab with Cilium, Gateway API and Cloudflare Tunnel](https://blog.prateekjain.dev/networking-a-kubernetes-homelab-cilium-gateway-api-and-cloudflare-tunnel-on-talos-362f548a2f3d?sk=d454cd4eaff4ce8a8fd0cd8e6b3d82f6) | [`networking/`](networking/README.md) |
 | 3. Remote access with Tailscale | [Tailscale on Talos Linux: Secure Remote Access to a Kubernetes Homelab](https://blog.prateekjain.dev/tailscale-on-talos-linux-secure-remote-access-to-a-kubernetes-homelab-8a082d903682?sk=c4ec5ac1e782a83b5dc785211d9fd082) | [`tailscale/`](tailscale/README.md) |
-| 4. Storage | planned | |
+| 4. Omni | [Importing an Existing Talos Cluster into Omni](https://blog.prateekjain.dev/bb1fc7722eda?source=friends_link&sk=a4c4412829ef81542ca4892a0edbecec) | [`omni/`](omni/README.md) |
+| 5. Storage with Longhorn | [Persistent Storage for a 3-Node Talos Homelab with Longhorn](https://blog.prateekjain.dev/persistent-storage-for-a-3-node-talos-homelab-with-longhorn-587c05356b73?source=friends_link&sk=9093231c2d278ba92fd493098fbe237d) | [`storage/`](storage/README.md) |
 
 ## The cluster
 
@@ -106,24 +107,45 @@ certificates, kubeconfig and talosconfig as at home.
 Details, the gotchas (node IPs, Cilium MTU, extension config before the
 upgrade) and the failover test: [`tailscale/`](tailscale/README.md).
 
+## Storage
+
+![How Longhorn gives a pod a volume: the PVC asks the longhorn StorageClass, Longhorn puts two replicas on bumblebee and ratchet in their longhorn partitions, starts the engine on optimus where the pod runs, and every write goes to both replicas](assets/longhorn-replicas.gif)
+
+Each node's single SSD is split in two: a 60 GiB `/var` for Talos and a
+170 GiB user volume at `/var/mnt/longhorn`. Longhorn replicates volumes across
+the nodes and is the default StorageClass.
+
+- **Two replicas per volume** on different nodes, so a node can go down and
+  Longhorn still has a third node to rebuild the missing copy on. That's
+  255 GiB of volumes in total.
+- **Snapshots** every hour, kept for a day; optional **backups** every night
+  to AWS S3, kept for two weeks.
+- **Node failures:** a pod on a powered-off node is force-deleted and its
+  volume attaches where the replacement runs.
+- **UI** at `https://longhorn.lab.prateek.cloud`, LAN and tailnet only (it has
+  no login).
+
+Details, the EPHEMERAL reset and the failure tests: [`storage/`](storage/README.md).
+
 ## Versions
 
 | Component | Version |
 | --- | --- |
-| Talos Linux | 1.14.0 |
-| Kubernetes | 1.36.3 |
+| Talos Linux | 1.14.3 |
+| Kubernetes | 1.36.4 |
 | Cilium | 1.20.2 |
 | Gateway API CRDs | v1.6.1 |
 | cert-manager | v1.21.2 |
 | cloudflared | 2026.10.0 |
-| Tailscale (Talos extension) | 1.102.2 |
+| Tailscale (Talos extension) | 1.102.3 |
+| Longhorn | 1.13.0 |
 
 ## What's next
 
-- **Storage:** a Talos user volume on each node's SSD and Longhorn for
-  replicated volumes.
-- **Later:** observability (Prometheus, Grafana), GitOps with Argo CD, backups,
-  and security tooling.
+- **Observability:** Prometheus and Grafana, the first real tenants of the
+  Longhorn volumes.
+- **Later:** GitOps with Argo CD, an auth proxy in front of the lab apps, and
+  security tooling.
 
 ## Repository layout
 
@@ -132,12 +154,14 @@ upgrade) and the failover test: [`tailscale/`](tailscale/README.md).
 | [`talos/`](talos/README.md) | Part 1: install, bootstrap and validate the Talos cluster |
 | [`networking/`](networking/README.md) | Part 2: Cilium, LB IPAM, Gateways, cert-manager, Cloudflare Tunnel, demo app and tests |
 | [`tailscale/`](tailscale/README.md) | Part 3: Tailscale extension, subnet routes, access policy, failover |
+| [`omni/`](omni/README.md) | Part 4: import into Omni, Talos 1.14 node patches, static IPs, undo patch |
+| [`storage/`](storage/README.md) | Part 5: system extensions through Omni, the Longhorn partition, Longhorn, snapshots, optional S3 backups |
 | `assets/` | Diagrams used in this README |
 | `.github/workflows/` | CI on every push: yamllint, kubeconform (Kubernetes 1.36 and the CRDs used), gitleaks, link check |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
 go in this repository: generated Talos configuration, `talosconfig`,
-`kubeconfig`, API tokens and tunnel credentials stay local (see `.gitignore`)
+`kubeconfig`, API tokens, tunnel and S3 credentials stay local (see `.gitignore`)
 or in Kubernetes Secrets created by hand.
 
 ## License

@@ -56,7 +56,7 @@ jobs:
             -schema-location '/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
             -ignore-filename-pattern '/talos/' \
-            -ignore-filename-pattern '^omni/' \
+            -ignore-filename-pattern '(^|/)omni/' \
             -ignore-filename-pattern '(values[^/]*|schematic|node-ip|extension-service)\.yaml$' \
             -ignore-filename-pattern '^\.' \
             .

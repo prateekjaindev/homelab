@@ -1,0 +1,37 @@
+# Split each node's 256 GB system disk: 60 GiB for /var (EPHEMERAL), 170 GiB
+# for Longhorn at /var/mnt/longhorn. A cluster-wide Omni config patch.
+#
+# Talos only sizes EPHEMERAL when it creates it, so this changes nothing on a
+# running node. It takes effect when Omni wipes the node (remove it from the
+# cluster, add it back): see storage/README.md. Both volumes are capped so the
+# layout doesn't depend on which one Talos creates first.
+#
+# omnictl apply -f storage/omni/storage-patch.yaml
+metadata:
+  namespace: default
+  type: ConfigPatches.omni.sidero.dev
+  id: 400-cybertron-storage
+  labels:
+    omni.sidero.dev/cluster: cybertron
+  annotations:
+    name: Storage layout
+    description: 60 GiB EPHEMERAL, 170 GiB user volume for Longhorn
+spec:
+  data: |
+    apiVersion: v1alpha1
+    kind: VolumeConfig
+    name: EPHEMERAL
+    provisioning:
+      maxSize: 60GiB
+    ---
+    apiVersion: v1alpha1
+    kind: UserVolumeConfig
+    name: longhorn
+    provisioning:
+      diskSelector:
+        match: system_disk
+      minSize: 100GiB
+      maxSize: 170GiB
+      grow: false
+    filesystem:
+      type: xfs

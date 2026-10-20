@@ -1,0 +1,29 @@
+# Jobs in the "default" group apply to every volume without recurring jobs of
+# its own, so a new PVC is covered as soon as it exists.
+
+# Hourly snapshots, kept for a day.
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: snapshot-hourly
+  namespace: longhorn-system
+spec:
+  task: snapshot
+  cron: "0 * * * *"
+  groups: [default]
+  retentionPolicy: count-based
+  retain: 24
+  concurrency: 2
+---
+# Weekly fstrim inside each volume (the reason for util-linux-tools), so space
+# freed by the filesystem goes back to the replicas.
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: trim-weekly
+  namespace: longhorn-system
+spec:
+  task: filesystem-trim
+  cron: "0 4 * * 0"
+  groups: [default]
+  concurrency: 1

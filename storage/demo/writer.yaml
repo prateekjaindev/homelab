@@ -1,0 +1,80 @@
+# Test workload for Longhorn: on first start it writes 256 MiB of random data
+# and its checksum, on every start it verifies them, then it appends one line
+# per second (time, pod, node) to heartbeat.log.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: storage-demo
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: writer-data
+  namespace: storage-demo
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: writer
+  namespace: storage-demo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate # a ReadWriteOnce volume can't be on two nodes during a rollout
+  selector:
+    matchLabels:
+      app: writer
+  template:
+    metadata:
+      labels:
+        app: writer
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: writer
+          image: busybox:1.37.0
+          env:
+            - name: NODE
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          command: [sh, -c]
+          args:
+            - |
+              set -eu
+              cd /data
+              if [ ! -f blob ]; then
+                head -c 268435456 /dev/urandom > blob
+                sha256sum blob > blob.sha256
+              fi
+              sha256sum -c blob.sha256
+              while true; do
+                echo "$(date -Iseconds) $HOSTNAME $NODE" >> heartbeat.log
+                sleep 1
+              done
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: writer-data
