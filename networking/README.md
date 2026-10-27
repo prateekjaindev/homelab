@@ -38,7 +38,7 @@ your network. Run the commands from the repository root, in bash.
 | Cilium | 1.20.2 |
 | Gateway API CRDs | v1.6.1 (the version Cilium 1.20.2 requires) |
 | cert-manager | v1.21.2 |
-| cloudflared | 2026.10.0 |
+| cloudflared | 2026.10.4 |
 | traefik/whoami | v1.12.0 |
 
 ## Files

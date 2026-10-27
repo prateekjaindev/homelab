@@ -136,7 +136,7 @@ Details, the EPHEMERAL reset and the failure tests: [`storage/`](storage/README.
 | Cilium | 1.20.2 |
 | Gateway API CRDs | v1.6.1 |
 | cert-manager | v1.21.2 |
-| cloudflared | 2026.10.0 |
+| cloudflared | 2026.10.4 |
 | Tailscale (Talos extension) | 1.102.3 |
 | Longhorn | 1.13.0 |
 

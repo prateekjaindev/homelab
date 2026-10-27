@@ -56,7 +56,7 @@ spec:
         seccompProfile: { type: RuntimeDefault }
       containers:
         - name: cloudflared
-          image: cloudflare/cloudflared:2026.10.0
+          image: cloudflare/cloudflared:2026.10.4
           args: ["tunnel", "--config", "/etc/cloudflared/config/config.yaml", "run", "$(TUNNEL_ID)"]
           env:
             - name: TUNNEL_ID
