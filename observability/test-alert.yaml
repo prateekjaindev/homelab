@@ -1,0 +1,17 @@
+# Always fires: checks the path from rule to Telegram. Delete it afterwards and
+# a resolved message follows.
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: test-alert
+  namespace: monitoring
+spec:
+  groups:
+    - name: test
+      rules:
+        - alert: CybertronTestAlert
+          expr: vector(1)
+          labels:
+            severity: warning
+          annotations:
+            summary: Test alert from Cybertron

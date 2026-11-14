@@ -1,0 +1,35 @@
+# Serve controller-manager, scheduler and etcd metrics on the node IPs, so
+# vmagent can scrape them. A cluster-wide Omni config patch.
+#
+# Talos 1.14 keeps controller-manager and scheduler settings in their own
+# documents; etcd is still in the v1alpha1 config.
+#
+# etcd gets a separate plain HTTP metrics port, so vmagent needs no etcd client
+# certificates. These ports are reachable on the LAN and the tailnet only.
+#
+# omnictl apply -f observability/omni/control-plane-metrics.yaml
+metadata:
+  namespace: default
+  type: ConfigPatches.omni.sidero.dev
+  id: 500-cybertron-metrics
+  labels:
+    omni.sidero.dev/cluster: cybertron
+  annotations:
+    name: Control plane metrics
+    description: controller-manager, scheduler and etcd metrics on the node IPs
+spec:
+  data: |
+    cluster:
+      etcd:
+        extraArgs:
+          listen-metrics-urls: http://0.0.0.0:2381
+    ---
+    apiVersion: v1alpha1
+    kind: KubeControllerManagerConfig
+    extraArgs:
+      bind-address: 0.0.0.0
+    ---
+    apiVersion: v1alpha1
+    kind: KubeSchedulerConfig
+    extraArgs:
+      bind-address: 0.0.0.0

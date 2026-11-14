@@ -1,0 +1,98 @@
+# victoria-metrics-k8s-stack 0.98.1 on Talos 1.14 (cybertron).
+# Metrics and logs keep the chart defaults: 1 month of retention, 20Gi each.
+
+vmsingle:
+  spec:
+    storage:
+      storageClassName: longhorn-single
+
+vlsingle:
+  enabled: true
+  spec:
+    storage:
+      storageClassName: longhorn-single
+
+# The chart connects vlagent to VLSingle by itself.
+vlagent:
+  enabled: true
+
+# Created by hand from ~/cybertron/alertmanager.yaml.
+alertmanager:
+  spec:
+    configSecret: alertmanager-config
+
+grafana:
+  # The chart only adds the VictoriaLogs data source if its plugin is installed.
+  plugins:
+    - victoriametrics-logs-datasource
+  persistence:
+    enabled: true
+    storageClassName: longhorn
+    size: 2Gi
+  # The Longhorn volume attaches to one pod at a time.
+  deploymentStrategy:
+    type: Recreate
+  # The LAN Gateway from Part 2, next to the Longhorn UI. Never the public one.
+  route:
+    main:
+      enabled: true
+      hostnames:
+        - grafana.lab.prateek.cloud
+      parentRefs:
+        - name: internal
+          namespace: gateway
+          sectionName: https
+
+# The chart's API server endpoint, plus a drop rule for latency histograms no
+# rule or dashboard reads: about a third of all series. Lists replace the
+# chart's, so the endpoint is copied whole.
+kubeApiServer:
+  vmScrape:
+    spec:
+      endpoints:
+        - port: https
+          scheme: https
+          bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tlsConfig:
+            caFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            serverName: kubernetes
+          metricRelabelConfigs:
+            - action: drop
+              source_labels: [__name__]
+              regex: (etcd_request_duration_seconds|apiserver_(watch_events_dispatch_duration_seconds|storage_list_duration_seconds|watch_list_duration_seconds|request_body_size_bytes|watch_cache_read_wait_seconds|watch_cache_initialization_duration_seconds|response_sizes|watch_events_sizes))_bucket
+
+# The control plane runs on each node's host network. The controller manager
+# and scheduler serve self-signed certificates.
+kubeControllerManager:
+  endpoints: [192.168.1.111, 192.168.1.112, 192.168.1.113]
+  vmScrape:
+    spec:
+      endpoints:
+        - port: http-metrics
+          scheme: https
+          bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tlsConfig:
+            insecureSkipVerify: true
+
+kubeScheduler:
+  endpoints: [192.168.1.111, 192.168.1.112, 192.168.1.113]
+  vmScrape:
+    spec:
+      endpoints:
+        - port: http-metrics
+          scheme: https
+          bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+          tlsConfig:
+            insecureSkipVerify: true
+
+# The plain HTTP metrics port from omni/control-plane-metrics.yaml.
+kubeEtcd:
+  endpoints: [192.168.1.111, 192.168.1.112, 192.168.1.113]
+  service:
+    port: 2381
+    targetPort: 2381
+  vmScrape:
+    spec:
+      endpoints:
+        - port: http-metrics
+          scheme: http

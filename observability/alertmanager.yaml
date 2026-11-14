@@ -1,0 +1,41 @@
+# Alertmanager config with placeholders. The real file holds the bot token:
+# copy it to ~/cybertron/alertmanager.yaml, fill it in, and create the
+# alertmanager-config Secret from it (see observability/README.md). Never commit it.
+route:
+  receiver: telegram
+  group_by: [alertname, namespace]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  routes:
+    # Always firing: pings Healthchecks.io every minute, the dead-man check.
+    - matchers: [alertname = "Watchdog"]
+      receiver: healthchecks
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 1m
+    # Only exists to mute info-level alerts.
+    - matchers: [alertname = "InfoInhibitor"]
+      receiver: blackhole
+
+receivers:
+  - name: telegram
+    telegram_configs:
+      - bot_token: <BOT_TOKEN>
+        chat_id: <CHAT_ID>  # a number, without quotes
+        send_resolved: true
+  - name: healthchecks
+    webhook_configs:
+      - url: https://hc-ping.com/<UUID>
+        send_resolved: false
+  - name: blackhole
+
+inhibit_rules:
+  # A warning stays quiet while the matching critical alert fires.
+  - source_matchers: [severity = "critical"]
+    target_matchers: [severity = "warning"]
+    equal: [alertname, namespace]
+  # Info alerts stay quiet; InfoInhibitor fires wherever one is active.
+  - source_matchers: [alertname = "InfoInhibitor"]
+    target_matchers: [severity = "info"]
+    equal: [namespace]
