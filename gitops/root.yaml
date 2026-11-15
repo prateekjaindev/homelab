@@ -1,0 +1,21 @@
+# The only manifest applied manually: it creates one Application per file in
+# gitops/apps/. None of those carry the resources finalizer, so pruning an
+# Application leaves what it created running.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/prateekjaindev/homelab.git
+    targetRevision: main
+    path: gitops/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://victoriametrics.github.io/helm-charts/
+      chart: victoria-metrics-k8s-stack
+      targetRevision: 0.98.1
+      helm:
+        # Same name as the Helm release, so Argo CD adopts the running resources.
+        releaseName: vmks
+        valueFiles:
+          - $values/observability/values.yaml
+    - repoURL: https://github.com/prateekjaindev/homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/prateekjaindev/homelab.git
+      targetRevision: main
+      path: observability
+      directory:
+        include: "{namespace.yaml,storageclass.yaml,longhorn-scrape.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # Some CRDs are too big for client-side apply's annotation.
+      - ServerSideApply=true

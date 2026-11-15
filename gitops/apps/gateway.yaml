@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gateway
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/prateekjaindev/homelab.git
+    targetRevision: main
+    path: networking/gateway
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gateway
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

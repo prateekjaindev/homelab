@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudflared
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/prateekjaindev/homelab.git
+    targetRevision: main
+    path: networking/cloudflared
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cloudflared
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

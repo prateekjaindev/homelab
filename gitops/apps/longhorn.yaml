@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.longhorn.io
+      chart: longhorn
+      targetRevision: 1.13.0
+      helm:
+        # Same name as the Helm release, so Argo CD adopts the running resources.
+        releaseName: longhorn
+        valueFiles:
+          - $values/storage/longhorn/values.yaml
+    - repoURL: https://github.com/prateekjaindev/homelab.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/prateekjaindev/homelab.git
+      targetRevision: main
+      path: storage/longhorn
+      directory:
+        include: "{namespace.yaml,recurring-jobs.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+  syncPolicy:
+    automated:
+      # Every PVC lives in Longhorn: leftovers wait for a delete in the UI.
+      prune: false
+      selfHeal: true
+    syncOptions:
+      # Some CRDs are too big for client-side apply's annotation.
+      - ServerSideApply=true

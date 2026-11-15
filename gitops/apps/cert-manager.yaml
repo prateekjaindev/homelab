@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: v1.21.2
+      helm:
+        # Same name as the Helm release, so Argo CD adopts the running resources.
+        releaseName: cert-manager
+        valueFiles:
+          - $values/networking/cert-manager/values.yaml
+    - repoURL: https://github.com/prateekjaindev/homelab.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      # Some CRDs are too big for client-side apply's annotation.
+      - ServerSideApply=true

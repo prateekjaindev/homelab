@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/prateekjaindev/homelab.git
+    targetRevision: main
+    path: networking/demo
+    directory:
+      include: "{whoami.yaml,deny-all.yaml,allow-from-gateway.yaml,route-lab.yaml,route-public.yaml}"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

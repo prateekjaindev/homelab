@@ -1,0 +1,31 @@
+# Argo CD (chart argo-cd 10.18.0, Argo CD v3.6.1) on cybertron.
+# Installed once with helm, then gitops/apps/argocd.yaml takes it over.
+
+global:
+  domain: argocd.lab.prateek.cloud
+
+configs:
+  params:
+    # The internal Gateway terminates TLS with the *.lab wildcard certificate.
+    server.insecure: true
+
+# No single sign-on and no sync messages yet.
+dex:
+  enabled: false
+notifications:
+  enabled: false
+
+# No ApplicationSets on this cluster.
+applicationSet:
+  replicas: 0
+
+# The UI on the LAN Gateway from Part 2: LAN and tailnet only.
+server:
+  httproute:
+    enabled: true
+    parentRefs:
+      - name: internal
+        namespace: gateway
+        sectionName: https
+    hostnames:
+      - argocd.lab.prateek.cloud
