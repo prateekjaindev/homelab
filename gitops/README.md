@@ -21,7 +21,7 @@ repository root, in bash.
 
 | Path | What |
 | --- | --- |
-| `argocd/values.yaml` | Helm values: one replica, no Dex, notifications or ApplicationSet controller, the UI on the internal Gateway |
+| `argocd/values.yaml` | Helm values: one replica, no Dex, notifications or ApplicationSet controller, the UI on the internal Gateway, an h2c port and route for the CLI's gRPC |
 | `root.yaml` | The root Application, applied once manually |
 | `apps/argocd.yaml` | Argo CD manages its own install |
 | `apps/cert-manager.yaml` | cert-manager chart + `networking/cert-manager/values.yaml` |
@@ -60,6 +60,16 @@ then:
 
 ```bash
 kubectl -n argocd delete secret argocd-initial-admin-secret
+```
+
+The CLI, at the server's version (`argocd-linux-arm64` on ARM, `brew install argocd`
+on a Mac). Its gRPC calls use the `argocd-server-grpc` route and the h2c Service
+port from the values; without them every command fails with a 404:
+
+```bash
+curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/download/v3.6.1/argocd-linux-amd64
+sudo install -m 555 argocd /usr/local/bin/argocd && rm argocd
+argocd login argocd.lab.prateek.cloud --username admin
 ```
 
 ## 2. The root Application

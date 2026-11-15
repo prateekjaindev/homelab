@@ -172,13 +172,14 @@ Details and the alert tests: [`observability/`](observability/README.md).
 | [`omni/`](omni/README.md) | Part 4: import into Omni, Talos 1.14 node patches, static IPs, undo patch |
 | [`storage/`](storage/README.md) | Part 5: system extensions through Omni, the Longhorn partition, Longhorn, snapshots, optional S3 backups |
 | [`observability/`](observability/README.md) | Part 6: control plane metrics through Omni, VictoriaMetrics, VictoriaLogs, Grafana, alerts to Telegram |
+| [`gitops/`](gitops/README.md) | Part 7: Argo CD, the root Application, the earlier Helm releases adopted in place |
 | `assets/` | Diagrams used in this README |
 | `.github/workflows/` | CI on every push: yamllint, kubeconform (Kubernetes 1.36 and the CRDs used), gitleaks, link check |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
 go in this repository: generated Talos configuration, `talosconfig`,
 `kubeconfig`, API tokens, tunnel, S3 and Telegram credentials stay local (see `.gitignore`)
-or in Kubernetes Secrets created by hand.
+or in Kubernetes Secrets created manually.
 
 ## License
 

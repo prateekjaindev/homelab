@@ -29,3 +29,34 @@ server:
         sectionName: https
     hostnames:
       - argocd.lab.prateek.cloud
+  # A second Service port that speaks HTTP/2 without TLS (h2c) to the same
+  # container port. Cilium's Envoy turns the CLI's gRPC-web calls back into
+  # gRPC, and Argo CD only treats a request as gRPC over HTTP/2.
+  service:
+    servicePortHttp2: 8080
+    servicePortHttp2AppProtocol: kubernetes.io/h2c
+
+extraObjects:
+  # gRPC requests for the same name go to the h2c port; everything else
+  # (the UI) stays on the route above. The header match makes this route win.
+  - apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      name: argocd-server-grpc
+      namespace: argocd
+    spec:
+      parentRefs:
+        - name: internal
+          namespace: gateway
+          sectionName: https
+      hostnames:
+        - argocd.lab.prateek.cloud
+      rules:
+        - matches:
+            - headers:
+                - name: content-type
+                  type: RegularExpression
+                  value: "^application/grpc.*"
+          backendRefs:
+            - name: argocd-server
+              port: 8080
