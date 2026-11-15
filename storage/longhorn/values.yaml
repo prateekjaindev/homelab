@@ -15,6 +15,11 @@ defaultSettings:
 persistence:
   defaultClassReplicaCount: 2
 
+# A pre-upgrade Helm hook, which Argo CD (Part 7) would run before every sync.
+# The chart says to turn it off under Argo CD or other GitOps tools.
+preUpgradeChecker:
+  jobEnabled: false
+
 # The UI on the LAN Gateway from Part 2. It has no login, so never the public one.
 httproute:
   enabled: true
