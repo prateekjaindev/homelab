@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: https://victoriametrics.github.io/helm-charts/
+    - repoURL: ghcr.io/victoriametrics/helm-charts
       chart: victoria-metrics-k8s-stack
       targetRevision: 0.98.1
       helm:

@@ -8,6 +8,20 @@ configs:
   params:
     # The internal Gateway terminates TLS with the *.lab wildcard certificate.
     server.insecure: true
+  # The OCI copies of two charts. Their classic repos on GitHub Pages have big
+  # index files that took longer than the repo server's 90 s limit to download.
+  # Public, so no credentials.
+  repositories:
+    argo-helm:
+      name: argo-helm
+      url: ghcr.io/argoproj/argo-helm
+      type: helm
+      enableOCI: "true"
+    victoriametrics:
+      name: victoriametrics
+      url: ghcr.io/victoriametrics/helm-charts
+      type: helm
+      enableOCI: "true"
 
 # No single sign-on and no sync messages yet.
 dex:

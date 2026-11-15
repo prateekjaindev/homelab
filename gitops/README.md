@@ -21,7 +21,7 @@ repository root, in bash.
 
 | Path | What |
 | --- | --- |
-| `argocd/values.yaml` | Helm values: one replica, no Dex, notifications or ApplicationSet controller, the UI on the internal Gateway, an h2c port and route for the CLI's gRPC |
+| `argocd/values.yaml` | Helm values: one replica, no Dex, notifications or ApplicationSet controller, the UI on the internal Gateway, an h2c port and route for the CLI's gRPC, the OCI chart registries |
 | `root.yaml` | The root Application, applied once manually |
 | `apps/argocd.yaml` | Argo CD manages its own install |
 | `apps/cert-manager.yaml` | cert-manager chart + `networking/cert-manager/values.yaml` |
@@ -47,9 +47,7 @@ helm list -A    # cilium, cert-manager, longhorn, vmks
 ## 1. Install Argo CD
 
 ```bash
-helm repo add argo https://argoproj.github.io/argo-helm
-helm repo update
-helm install argocd argo/argo-cd --version 10.18.0 \
+helm install argocd oci://ghcr.io/argoproj/argo-helm/argo-cd --version 10.18.0 \
   --namespace argocd --create-namespace --values gitops/argocd/values.yaml
 kubectl -n argocd get pods
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
