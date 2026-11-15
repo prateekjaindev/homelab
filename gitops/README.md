@@ -80,42 +80,7 @@ argocd app list    # root, then one Application per file in gitops/apps/
 Argo CD checks the repository every 2 to 3 minutes; Refresh in the UI or
 `argocd app get <name> --refresh` skips the wait.
 
-## 3. Before the observability Application syncs
-
-Argo CD renders charts with `helm template`, which can't read the cluster, so
-two things the chart used to reuse would change on every render. Create
-Grafana's admin Secret manually:
-
-```bash
-read -rs GF_PASS
-kubectl -n monitoring create secret generic grafana-admin \
-  --from-literal=admin-user=admin --from-literal=admin-password="$GF_PASS"
-unset GF_PASS
-```
-
-and add to `observability/values.yaml`:
-
-```yaml
-grafana:
-  admin:
-    existingSecret: grafana-admin
-    userKey: admin-user
-    passwordKey: admin-password
-
-victoria-metrics-operator:
-  admissionWebhooks:
-    certManager:
-      enabled: true
-```
-
-Grafana keeps the password set in Part 6 in its own database. Check that the
-pods and PVCs survived:
-
-```bash
-kubectl -n monitoring get pods,pvc
-```
-
-## 4. Before the Longhorn Application syncs
+## 3. Before the Longhorn Application syncs
 
 Add to `storage/longhorn/values.yaml`, so the pre-upgrade check Job doesn't run
 on every sync:
@@ -132,7 +97,7 @@ to `valueFiles` and `recurring-backup.yaml` to `include` in `apps/longhorn.yaml`
 kubectl -n longhorn-system get volumes.longhorn.io   # all still healthy
 ```
 
-## 5. Retire the Helm releases
+## 4. Retire the Helm releases
 
 Argo CD doesn't use Helm's release records. Delete them so a `helm upgrade`
 can't fight Argo CD; nothing running changes:
