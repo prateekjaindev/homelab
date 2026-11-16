@@ -23,11 +23,52 @@ configs:
       type: helm
       enableOCI: "true"
 
-# No single sign-on and no sync messages yet.
+# No single sign-on.
 dex:
   enabled: false
+
+# Sync failures and degraded Applications go to a Discord channel.
 notifications:
-  enabled: false
+  enabled: true
+  argocdUrl: https://argocd.lab.prateek.cloud
+  # argocd-notifications-secret is created manually: it holds the Discord
+  # webhook URL, which can't go in a public repository.
+  secret:
+    create: false
+  notifiers:
+    service.webhook.discord: |
+      url: $discord-webhook-url
+      headers:
+        - name: Content-Type
+          value: application/json
+  subscriptions:
+    - recipients:
+        - discord
+      triggers:
+        - on-sync-failed
+        - on-health-degraded
+  templates:
+    template.discord-sync-failed: |
+      webhook:
+        discord:
+          method: POST
+          body: |
+            {"content": ":red_circle: Sync failed: **{{.app.metadata.name}}** ({{.app.status.operationState.phase}})\n{{.context.argocdUrl}}/applications/argocd/{{.app.metadata.name}}"}
+    template.discord-health-degraded: |
+      webhook:
+        discord:
+          method: POST
+          body: |
+            {"content": ":warning: Degraded: **{{.app.metadata.name}}**\n{{.context.argocdUrl}}/applications/argocd/{{.app.metadata.name}}"}
+  triggers:
+    trigger.on-sync-failed: |
+      - description: The sync failed
+        when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
+        send: [discord-sync-failed]
+    trigger.on-health-degraded: |
+      - description: The Application is Degraded
+        when: app.status.health.status == 'Degraded'
+        send: [discord-health-degraded]
 
 # No ApplicationSets on this cluster.
 applicationSet:
