@@ -5,6 +5,8 @@ this repository. One root Application creates an Application per file in
 `apps/`, and the Helm releases from Parts 2, 5 and 6 are adopted in place, with
 the same resource names and the same PVCs.
 
+![Argo CD compares each Application in Git with what runs in the cluster, syncs a replica change pushed to Git, and puts Grafana back after it is scaled to 0 directly in the cluster](../assets/gitops-flow.gif)
+
 Replace `prateek.cloud`, the repository URL in `root.yaml` and `apps/*.yaml`
 and the `192.168.1.x` addresses with your own. Run the commands from the
 repository root, in bash.
@@ -21,7 +23,7 @@ repository root, in bash.
 
 | Path | What |
 | --- | --- |
-| `argocd/values.yaml` | Helm values: one replica, no Dex, notifications or ApplicationSet controller, the UI on the internal Gateway, an h2c port and route for the CLI's gRPC, the OCI chart registries |
+| `argocd/values.yaml` | Helm values: one replica, no Dex or ApplicationSet controller, the UI on the internal Gateway, an h2c port and route for the CLI's gRPC, the OCI chart registries, notifications to Discord |
 | `root.yaml` | The root Application, applied once manually |
 | `apps/argocd.yaml` | Argo CD manages its own install |
 | `apps/cert-manager.yaml` | cert-manager chart + `networking/cert-manager/values.yaml` |
@@ -29,7 +31,6 @@ repository root, in bash.
 | `apps/cloudflared.yaml` | `networking/cloudflared/` |
 | `apps/longhorn.yaml` | Longhorn chart + `storage/longhorn/` values, namespace and recurring jobs; prune off |
 | `apps/observability.yaml` | victoria-metrics-k8s-stack + `observability/` values, namespace, StorageClass and Longhorn scrape |
-| `apps/demo.yaml` | The whoami demo from Part 2, without the LoadBalancer test Service |
 
 Left out on purpose: Cilium (Argo CD runs on its network), the Talos and Omni
 patches, Secrets and the ClusterIssuers (their email is filled in at apply
@@ -83,7 +84,7 @@ Argo CD checks the repository every 2 to 3 minutes; Refresh in the UI or
 ## 3. Before the Longhorn Application syncs
 
 Add to `storage/longhorn/values.yaml`, so the pre-upgrade check Job doesn't run
-on every sync:
+on every sync (the chart says to turn it off under Argo CD):
 
 ```yaml
 preUpgradeChecker:
@@ -97,6 +98,16 @@ to `valueFiles` and `recurring-backup.yaml` to `include` in `apps/longhorn.yaml`
 kubectl -n longhorn-system get volumes.longhorn.io   # all still healthy
 ```
 
+Check the data survived, with the writer from Part 5: a restart detaches and
+reattaches its volume, then it verifies its checksum.
+
+```bash
+kubectl -n storage-demo rollout restart deploy/writer
+kubectl -n storage-demo rollout status deploy/writer
+kubectl -n storage-demo logs deploy/writer                                  # blob: OK
+kubectl -n storage-demo exec deploy/writer -- head -1 /data/heartbeat.log   # the Part 5 date
+```
+
 ## 4. Retire the Helm releases
 
 Argo CD doesn't use Helm's release records. Delete them so a `helm upgrade`
@@ -108,6 +119,26 @@ kubectl -n cert-manager delete secret -l owner=helm,name=cert-manager
 kubectl -n longhorn-system delete secret -l owner=helm,name=longhorn
 kubectl -n monitoring delete secret -l owner=helm,name=vmks
 helm list -A    # only cilium
+```
+
+## 5. Sync alerts on Discord
+
+The values turn on Argo CD notifications: a Discord message when a sync fails
+or an Application turns Degraded. Create a webhook in Discord (Server Settings,
+Integrations, Webhooks), then store its URL; the chart doesn't create this
+Secret (`notifications.secret.create: false`):
+
+```bash
+read -rs DISCORD_WEBHOOK
+kubectl -n argocd create secret generic argocd-notifications-secret \
+  --from-literal=discord-webhook-url="$DISCORD_WEBHOOK"
+unset DISCORD_WEBHOOK
+```
+
+Send a test message:
+
+```bash
+argocd admin notifications template notify discord-sync-failed observability -n argocd --recipient discord
 ```
 
 ## Rollback
