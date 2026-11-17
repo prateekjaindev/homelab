@@ -1,6 +1,7 @@
 # Part 7: GitOps with Argo CD
 
-Companion to Part 7 of the Cybertron series: Argo CD runs the cluster from
+Companion to Part 7 of the Cybertron series,
+[GitOps for a 3-Node Talos Kubernetes Homelab with Argo CD](https://blog.prateekjain.dev/gitops-for-a-3-node-talos-kubernetes-homelab-with-argo-cd-336c076e93cc?source=friends_link&sk=ebda84ecdc3e2458fead2638374be51e): Argo CD runs the cluster from
 this repository. One root Application creates an Application per file in
 `apps/`, and the Helm releases from Parts 2, 5 and 6 are adopted in place, with
 the same resource names and the same PVCs.

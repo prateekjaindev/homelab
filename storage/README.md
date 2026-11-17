@@ -1,6 +1,7 @@
 # Part 5: Storage
 
-Companion to Part 5 of the Cybertron series: the single 256 GB SSD in each
+Companion to Part 5 of the Cybertron series,
+[Persistent Storage for a 3-Node Talos Homelab with Longhorn](https://blog.prateekjain.dev/persistent-storage-for-a-3-node-talos-homelab-with-longhorn-587c05356b73?source=friends_link&sk=9093231c2d278ba92fd493098fbe237d): the single 256 GB SSD in each
 node is split into a 60 GiB `/var` and a 170 GiB Talos user volume, and
 Longhorn replicates volumes across the three nodes, with hourly snapshots,
 optional nightly backups to AWS S3 and the UI on the internal Gateway.

@@ -1,6 +1,7 @@
 # Part 6: Observability
 
-Companion to Part 6 of the Cybertron series: VictoriaMetrics stores metrics
+Companion to Part 6 of the Cybertron series,
+[Metrics, Logs and Alerts for a 3-Node Talos Homelab with VictoriaMetrics](https://blog.prateekjain.dev/metrics-logs-and-alerts-for-a-3-node-talos-homelab-with-victoriametrics-0f4a91b9d44e?sk=751eedebb5d54cc15561d59abb7e52d8): VictoriaMetrics stores metrics
 from every node, pod, Longhorn volume and control plane component, VictoriaLogs
 stores every pod's logs, Grafana shows both on the internal Gateway, and
 Alertmanager sends alerts to Telegram, with a Healthchecks.io dead-man check

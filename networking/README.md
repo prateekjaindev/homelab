@@ -1,6 +1,7 @@
 # Part 2: Networking
 
-Companion to Part 2 of the Cybertron series: Cilium replaces Flannel and
+Companion to Part 2 of the Cybertron series,
+[Networking a 3-Node Kubernetes Homelab with Cilium, Gateway API and Cloudflare Tunnel](https://blog.prateekjain.dev/networking-a-kubernetes-homelab-cilium-gateway-api-and-cloudflare-tunnel-on-talos-362f548a2f3d?sk=d454cd4eaff4ce8a8fd0cd8e6b3d82f6): Cilium replaces Flannel and
 kube-proxy on the running cluster, then LoadBalancer IPs on the LAN, two
 Gateways (LAN and internet), Let's Encrypt certificates for LAN-only names,
 and one Cloudflare Tunnel for public apps.
