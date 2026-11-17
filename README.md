@@ -1,6 +1,6 @@
 # Homelab
 
-![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel, Tailscale, Longhorn, VictoriaMetrics and Grafana](assets/banner.png)
+![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel, Tailscale, Longhorn, VictoriaMetrics, Grafana and Argo CD](assets/banner.png)
 
 [![validate](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml/badge.svg)](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml)
 [![Talos 1.14](https://img.shields.io/badge/Talos-1.14-FF7300?logo=talos&logoColor=white)](https://www.talos.dev)
@@ -26,6 +26,7 @@ else depends on.
 | 4. Omni | [Importing an Existing Talos Cluster into Omni](https://blog.prateekjain.dev/bb1fc7722eda?source=friends_link&sk=a4c4412829ef81542ca4892a0edbecec) | [`omni/`](omni/README.md) |
 | 5. Storage with Longhorn | [Persistent Storage for a 3-Node Talos Homelab with Longhorn](https://blog.prateekjain.dev/persistent-storage-for-a-3-node-talos-homelab-with-longhorn-587c05356b73?source=friends_link&sk=9093231c2d278ba92fd493098fbe237d) | [`storage/`](storage/README.md) |
 | 6. Observability with VictoriaMetrics | [Metrics, Logs and Alerts for a 3-Node Talos Homelab with VictoriaMetrics](https://blog.prateekjain.dev/metrics-logs-and-alerts-for-a-3-node-talos-homelab-with-victoriametrics-0f4a91b9d44e?sk=751eedebb5d54cc15561d59abb7e52d8) | [`observability/`](observability/README.md) |
+| 7. GitOps with Argo CD | [GitOps for a 3-Node Talos Kubernetes Homelab with Argo CD](https://blog.prateekjain.dev/gitops-for-a-3-node-talos-kubernetes-homelab-with-argo-cd-336c076e93cc?source=friends_link&sk=ebda84ecdc3e2458fead2638374be51e) | [`gitops/`](gitops/README.md) |
 
 ## The cluster
 
@@ -143,6 +144,26 @@ Loki: the same PromQL, dashboards and alert rules, with less RAM on 8 GB nodes.
 
 Details and the alert tests: [`observability/`](observability/README.md).
 
+## GitOps
+
+![Argo CD compares each Application in Git with the cluster, syncs a change pushed to Git, and puts back a change made directly in the cluster](assets/gitops-flow.gif)
+
+Argo CD runs the cluster from this repository: a `git push` changes the
+cluster, and a change made directly in the cluster is put back within minutes.
+
+- **App of apps:** one root Application, applied once, creates an Application
+  for every file in `gitops/apps/`.
+- **Adopted in place:** cert-manager, the Gateways, cloudflared, Longhorn and
+  the observability stack moved from Helm to Argo CD with no reinstall, by
+  keeping the Helm release names.
+- **Argo CD manages itself**, with its UI at `https://argocd.lab.prateek.cloud`,
+  LAN and tailnet only.
+- **Kept outside:** Cilium (Argo CD runs on its network), the Omni patches and
+  every Secret. Longhorn has prune off.
+- **Alerts** on Discord when a sync fails or an Application turns Degraded.
+
+Details, the CLI through the Gateway and the rollback: [`gitops/`](gitops/README.md).
+
 ## Versions
 
 | Component | Version |
@@ -156,11 +177,13 @@ Details and the alert tests: [`observability/`](observability/README.md).
 | Tailscale (Talos extension) | 1.102.3 |
 | Longhorn | 1.13.0 |
 | victoria-metrics-k8s-stack | 0.98.1 |
+| Argo CD | v3.6.1 (chart 10.18.0) |
 
 ## What's next
 
-- **Next:** GitOps with Argo CD, an auth proxy in front of the lab apps, and
-  security tooling.
+- **Next:** creating Cybertron from Git: a new cluster from Omni, Argo CD and
+  this repository, with the Secrets encrypted in it.
+- **Later:** an auth proxy in front of the lab apps, and security tooling.
 
 ## Repository layout
 
@@ -172,13 +195,13 @@ Details and the alert tests: [`observability/`](observability/README.md).
 | [`omni/`](omni/README.md) | Part 4: import into Omni, Talos 1.14 node patches, static IPs, undo patch |
 | [`storage/`](storage/README.md) | Part 5: system extensions through Omni, the Longhorn partition, Longhorn, snapshots, optional S3 backups |
 | [`observability/`](observability/README.md) | Part 6: control plane metrics through Omni, VictoriaMetrics, VictoriaLogs, Grafana, alerts to Telegram |
-| [`gitops/`](gitops/README.md) | Part 7: Argo CD, the root Application, the earlier Helm releases adopted in place |
+| [`gitops/`](gitops/README.md) | Part 7: Argo CD, the root Application, the earlier Helm releases adopted in place, sync alerts to Discord |
 | `assets/` | Diagrams used in this README |
 | `.github/workflows/` | CI on every push: yamllint, kubeconform (Kubernetes 1.36 and the CRDs used), gitleaks, link check |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
 go in this repository: generated Talos configuration, `talosconfig`,
-`kubeconfig`, API tokens, tunnel, S3 and Telegram credentials stay local (see `.gitignore`)
+`kubeconfig`, API tokens, tunnel, S3, Telegram and Discord credentials stay local (see `.gitignore`)
 or in Kubernetes Secrets created manually.
 
 ## License
