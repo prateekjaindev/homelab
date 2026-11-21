@@ -1,5 +1,10 @@
 # Part 8: Secrets from Bitwarden with External Secrets
 
+Companion to Part 8 of the Cybertron series,
+[Kubernetes Secrets on a Talos Homelab with Bitwarden](https://blog.prateekjain.dev/kubernetes-secrets-on-a-talos-homelab-with-bitwarden-eb5696dfb3be?source=friends_link&sk=0f6495f99946cd6de38c978dc13a4ad7).
+
+![Secrets flow from the cybertron Bitwarden project through bitwarden-sdk-server and External Secrets into four Kubernetes Secrets; a deleted Secret is recreated, a value changed in Bitwarden syncs through, and Git holds only references](../assets/secrets-flow.gif)
+
 Every Secret that used to be created manually now comes from a Bitwarden Secrets
 Manager project. External Secrets Operator (ESO) reads it and writes ordinary
 Kubernetes Secrets. The repository only holds references, so it stays public.

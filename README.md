@@ -1,6 +1,6 @@
 # Homelab
 
-![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel, Tailscale, Longhorn, VictoriaMetrics, Grafana and Argo CD](assets/banner.png)
+![Cybertron: a three-node, highly available Kubernetes cluster on Talos Linux, with Cilium, cert-manager, Cloudflare Tunnel, Tailscale, Longhorn, VictoriaMetrics, Grafana, Argo CD, External Secrets and Bitwarden](assets/banner.png)
 
 [![validate](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml/badge.svg)](https://github.com/prateekjaindev/homelab/actions/workflows/validate.yaml)
 [![Talos 1.14](https://img.shields.io/badge/Talos-1.14-FF7300?logo=talos&logoColor=white)](https://www.talos.dev)
@@ -27,6 +27,7 @@ else depends on.
 | 5. Storage with Longhorn | [Persistent Storage for a 3-Node Talos Homelab with Longhorn](https://blog.prateekjain.dev/persistent-storage-for-a-3-node-talos-homelab-with-longhorn-587c05356b73?source=friends_link&sk=9093231c2d278ba92fd493098fbe237d) | [`storage/`](storage/README.md) |
 | 6. Observability with VictoriaMetrics | [Metrics, Logs and Alerts for a 3-Node Talos Homelab with VictoriaMetrics](https://blog.prateekjain.dev/metrics-logs-and-alerts-for-a-3-node-talos-homelab-with-victoriametrics-0f4a91b9d44e?sk=751eedebb5d54cc15561d59abb7e52d8) | [`observability/`](observability/README.md) |
 | 7. GitOps with Argo CD | [GitOps for a 3-Node Talos Kubernetes Homelab with Argo CD](https://blog.prateekjain.dev/gitops-for-a-3-node-talos-kubernetes-homelab-with-argo-cd-336c076e93cc?source=friends_link&sk=ebda84ecdc3e2458fead2638374be51e) | [`gitops/`](gitops/README.md) |
+| 8. Secrets with Bitwarden and External Secrets | [Kubernetes Secrets on a Talos Homelab with Bitwarden](https://blog.prateekjain.dev/kubernetes-secrets-on-a-talos-homelab-with-bitwarden-eb5696dfb3be?source=friends_link&sk=0f6495f99946cd6de38c978dc13a4ad7) | [`secrets/`](secrets/README.md) |
 
 ## The cluster
 
@@ -159,10 +160,27 @@ cluster, and a change made directly in the cluster is put back within minutes.
 - **Argo CD manages itself**, with its UI at `https://argocd.lab.prateek.cloud`,
   LAN and tailnet only.
 - **Kept outside:** Cilium (Argo CD runs on its network), the Omni patches and
-  every Secret. Longhorn has prune off.
+  one token (see Secrets). Longhorn has prune off.
 - **Alerts** on Discord when a sync fails or an Application turns Degraded.
 
 Details, the CLI through the Gateway and the rollback: [`gitops/`](gitops/README.md).
+
+## Secrets
+
+![Secrets flow from the cybertron Bitwarden project through bitwarden-sdk-server and External Secrets into four Kubernetes Secrets; a deleted Secret is recreated, a value changed in Bitwarden syncs through, and Git holds only references](assets/secrets-flow.gif)
+
+Every Secret that used to be created manually comes from one Bitwarden Secrets
+Manager project, synced by External Secrets Operator. The repository holds only
+references, never values.
+
+- **One store:** the `bitwarden` ClusterSecretStore, logged in with a read-only
+  machine account, through `bitwarden-sdk-server` over HTTPS with a private CA.
+- **Four ExternalSecrets** with the same names as the Secrets they replaced:
+  the Cloudflare API token, the tunnel credentials, Alertmanager's config and
+  the Argo CD Discord webhook.
+- **One manual Secret:** the machine account token, the only thing a rebuild needs.
+
+Details and the tests: [`secrets/`](secrets/README.md).
 
 ## Versions
 
@@ -178,12 +196,13 @@ Details, the CLI through the Gateway and the rollback: [`gitops/`](gitops/README
 | Longhorn | 1.13.0 |
 | victoria-metrics-k8s-stack | 0.98.1 |
 | Argo CD | v3.6.1 (chart 10.18.0) |
+| External Secrets Operator | chart 2.15.0 |
 
 ## What's next
 
-- **Next:** creating Cybertron from Git: a new cluster from Omni, Argo CD and
-  this repository, with the Secrets encrypted in it.
-- **Later:** an auth proxy in front of the lab apps, and security tooling.
+- **Next:** Authentik in front of every admin UI: one login with two-factor
+  authentication, OIDC for Argo CD and Grafana, and a proxy for the rest.
+- **Later:** creating Cybertron from Git on a new cluster, and security tooling.
 
 ## Repository layout
 
