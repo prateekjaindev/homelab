@@ -196,13 +196,14 @@ Details, the CLI through the Gateway and the rollback: [`gitops/`](gitops/README
 | [`storage/`](storage/README.md) | Part 5: system extensions through Omni, the Longhorn partition, Longhorn, snapshots, optional S3 backups |
 | [`observability/`](observability/README.md) | Part 6: control plane metrics through Omni, VictoriaMetrics, VictoriaLogs, Grafana, alerts to Telegram |
 | [`gitops/`](gitops/README.md) | Part 7: Argo CD, the root Application, the earlier Helm releases adopted in place, sync alerts to Discord |
+| [`secrets/`](secrets/README.md) | Part 8: External Secrets Operator, Bitwarden Secrets Manager, every Secret synced from one project |
 | `assets/` | Diagrams used in this README |
 | `.github/workflows/` | CI on every push: yamllint, kubeconform (Kubernetes 1.36 and the CRDs used), gitleaks, link check |
 
 Replace the domain and `192.168.1.x` addresses with your own. Credentials never
 go in this repository: generated Talos configuration, `talosconfig`,
 `kubeconfig`, API tokens, tunnel, S3, Telegram and Discord credentials stay local (see `.gitignore`)
-or in Kubernetes Secrets created manually.
+or in Bitwarden Secrets Manager, synced into the cluster by External Secrets (Part 8).
 
 ## License
 

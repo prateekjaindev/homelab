@@ -22,6 +22,11 @@ configs:
       url: ghcr.io/victoriametrics/helm-charts
       type: helm
       enableOCI: "true"
+    external-secrets:
+      name: external-secrets
+      url: ghcr.io/external-secrets/charts
+      type: helm
+      enableOCI: "true"
 
 # No single sign-on.
 dex:
@@ -31,8 +36,8 @@ dex:
 notifications:
   enabled: true
   argocdUrl: https://argocd.lab.prateek.cloud
-  # argocd-notifications-secret is created manually: it holds the Discord
-  # webhook URL, which can't go in a public repository.
+  # argocd-notifications-secret holds the Discord webhook URL. External
+  # Secrets creates it from Bitwarden (secrets/external-secrets/).
   secret:
     create: false
   notifiers:
