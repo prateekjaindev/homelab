@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":dependencyDashboard"],
+  "schedule": ["* * * * 0,6"],
+  "argocd": {
+    "managerFilePatterns": ["/^gitops/apps/.+\\.yaml$/"]
+  },
+  "kubernetes": {
+    "managerFilePatterns": ["/^(networking|storage)/.+\\.yaml$/"]
+  }
+}
