@@ -46,7 +46,7 @@ jobs:
           python "$RUNNER_TEMP/openapi2jsonschema.py" "$RUNNER_TEMP/longhorn.yaml" > /dev/null
 
       # Skipped on purpose: Helm values, Talos machine-config patches, Omni
-      # resources, Image Factory schematics and the Alertmanager config are not Kubernetes resources.
+      # resources, Image Factory schematics, the Alertmanager config and renovate.json are not Kubernetes resources.
       - name: Validate manifests
         run: |
           docker run --rm -v "$PWD:/repo:ro" -v "$RUNNER_TEMP/schemas:/schemas:ro" -w /repo \
@@ -59,6 +59,7 @@ jobs:
             -ignore-filename-pattern '(^|/)omni/' \
             -ignore-filename-pattern '(values[^/]*|schematic|node-ip|extension-service|alertmanager[^/]*)\.yaml$' \
             -ignore-filename-pattern '^\.' \
+            -ignore-filename-pattern '^renovate\.json$' \
             .
 
   gitleaks:
