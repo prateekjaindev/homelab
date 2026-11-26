@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version: "3.15"
 
       # The community CRD catalog lags behind Longhorn, so its schemas are built
       # from the official CRDs at the version the storage part installs.
