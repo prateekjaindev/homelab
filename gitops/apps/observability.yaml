@@ -8,7 +8,7 @@ spec:
   sources:
     - repoURL: ghcr.io/victoriametrics/helm-charts
       chart: victoria-metrics-k8s-stack
-      targetRevision: 0.98.1
+      targetRevision: 0.99.0
       helm:
         # Same name as the Helm release, so Argo CD adopts the running resources.
         releaseName: vmks
