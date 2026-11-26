@@ -8,7 +8,7 @@ spec:
   sources:
     - repoURL: ghcr.io/argoproj/argo-helm
       chart: argo-cd
-      targetRevision: 10.18.0
+      targetRevision: 10.20.0
       helm:
         # Same name as the Helm release, so Argo CD adopts the running resources.
         releaseName: argocd
